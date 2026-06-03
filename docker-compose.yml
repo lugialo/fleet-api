@@ -23,6 +23,29 @@ services:
     networks:
       - fleet-network
 
+  sqlserver-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: fleet-sqlserver-init
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      DB_NAME: "${DB_NAME:-fleet}"
+      MSSQL_SA_PASSWORD: "${DB_PASSWORD}"
+    command:
+      - /bin/bash
+      - -c
+      - |
+        /opt/mssql-tools18/bin/sqlcmd \
+          -S sqlserver \
+          -U sa \
+          -P "$${MSSQL_SA_PASSWORD}" \
+          -C \
+          -Q "IF DB_ID(N'$${DB_NAME}') IS NULL CREATE DATABASE [$${DB_NAME}]"
+    networks:
+      - fleet-network
+    restart: "no"
+
   redis:
     image: redis:7-alpine
     container_name: fleet-redis
