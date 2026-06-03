@@ -1,0 +1,90 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: fleet-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${DB_PASSWORD}"
+      MSSQL_PID: "Developer"
+    ports:
+      - "${DB_PORT:-1433}:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          '/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$${MSSQL_SA_PASSWORD}" -C -Q "SELECT 1" || exit 1',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - fleet-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: fleet-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fleet-network
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: fleet-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: "${RABBITMQ_USER:-fleet}"
+      RABBITMQ_DEFAULT_PASS: "${RABBITMQ_PASSWORD:-fleet}"
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fleet-network
+
+  mongodb:
+    image: mongo:7
+    container_name: fleet-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "${MONGO_USERNAME:-fleet}"
+      MONGO_INITDB_ROOT_PASSWORD: "${MONGO_PASSWORD:-fleet}"
+      MONGO_INITDB_DATABASE: "${MONGO_DATABASE:-fleet_audit}"
+    ports:
+      - "${MONGO_PORT:-27017}:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test:
+        ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - fleet-network
+
+volumes:
+  sqlserver_data:
+  redis_data:
+  rabbitmq_data:
+  mongodb_data:
+
+networks:
+  fleet-network:
+    driver: bridge
