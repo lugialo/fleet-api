@@ -163,9 +163,9 @@ Rodar container:
 docker run --env-file .env -p 3000:3000 fleet-api
 ```
 
-Observação: quando a API roda em container na mesma network do Compose, use hosts dos servicos (`sqlserver`, `redis`, `rabbitmq`, `mongodb`) no `.env`.
+Observação: quando a API roda em container na mesma network do Compose, use hosts dos serviços (`sqlserver`, `redis`, `rabbitmq`, `mongodb`) no `.env`.
 
-## Autenticacao
+## Autenticação
 
 Login:
 
