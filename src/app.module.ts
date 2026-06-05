@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -11,6 +12,9 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { BrandsModule } from './brands/brands.module';
 import { ModelsModule } from './models/models.module';
 import { VehiclesModule } from './vehicles/vehicles.module';
+import { AuditInterceptor } from './audit/audit.interceptor';
+import { AuditModule } from './audit/audit.module';
+import { MessagingModule } from './messaging/messaging.module';
 
 @Module({
   imports: [
@@ -46,13 +50,19 @@ import { VehiclesModule } from './vehicles/vehicles.module';
     BrandsModule,
     ModelsModule,
     VehiclesModule,
+    AuditModule,
+    MessagingModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
     {
-      provide: 'APP_GUARD',
+      provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: AuditInterceptor,
     },
   ],
 })

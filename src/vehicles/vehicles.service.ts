@@ -8,6 +8,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { MessagingService } from '../messaging/messaging.service';
 import { Model } from '../models/entities/model.entity';
 import { User } from '../users/entities/user.entity';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
@@ -32,6 +33,8 @@ export class VehiclesService {
     private readonly cacheManager: Cache,
 
     private readonly configService: ConfigService,
+
+    private readonly messagingService: MessagingService,
   ) {}
 
   async create(dto: CreateVehicleDto, userId: string): Promise<Vehicle> {
@@ -70,6 +73,13 @@ export class VehiclesService {
     const savedVehicle = await this.vehiclesRepository.save(vehicle);
 
     await this.invalidateVehiclesListCache();
+    this.messagingService.emitVehicleCreated({
+      vehicle_id: savedVehicle.id,
+      plate: savedVehicle.plate,
+      model_id: model.id,
+      created_by: user.id,
+      created_at: new Date().toISOString(),
+    });
 
     return savedVehicle;
   }

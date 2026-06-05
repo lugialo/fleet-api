@@ -5,6 +5,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { FindOptionsWhere } from 'typeorm';
+import { MessagingService } from '../messaging/messaging.service';
 import { Model } from '../models/entities/model.entity';
 import { User } from '../users/entities/user.entity';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
@@ -55,6 +56,10 @@ describe('VehiclesService', () => {
     get: jest.fn(),
   };
 
+  const messagingService = {
+    emitVehicleCreated: jest.fn(),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
 
@@ -80,6 +85,10 @@ describe('VehiclesService', () => {
         {
           provide: ConfigService,
           useValue: configService,
+        },
+        {
+          provide: MessagingService,
+          useValue: messagingService,
         },
       ],
     }).compile();
@@ -160,6 +169,13 @@ describe('VehiclesService', () => {
 
     expect(result).toEqual(savedVehicle);
     expect(cacheManager.del).toHaveBeenCalledWith('vehicles_list');
+    expect(messagingService.emitVehicleCreated).toHaveBeenCalledWith({
+      vehicle_id: 'vehicle-id',
+      plate: 'ABC1234',
+      model_id: 'model-id',
+      created_by: 'user-id',
+      created_at: expect.any(String) as string,
+    });
   });
 
   it('deve bloquear criação com placa duplicada', async () => {
@@ -179,6 +195,7 @@ describe('VehiclesService', () => {
     );
     expect(modelsRepository.findOneBy).not.toHaveBeenCalled();
     expect(cacheManager.del).not.toHaveBeenCalled();
+    expect(messagingService.emitVehicleCreated).not.toHaveBeenCalled();
   });
 
   it('deve bloquear criação sem modelo existente', async () => {
