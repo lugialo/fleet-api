@@ -1,8 +1,11 @@
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import {
   ConflictException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Model } from '../models/entities/model.entity';
@@ -11,15 +14,24 @@ import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
 import { Vehicle } from './entities/vehicle.entity';
 
+const VEHICLES_LIST_CACHE_KEY = 'vehicles_list';
+
 @Injectable()
 export class VehiclesService {
   constructor(
     @InjectRepository(Vehicle)
     private readonly vehiclesRepository: Repository<Vehicle>,
+
     @InjectRepository(Model)
     private readonly modelsRepository: Repository<Model>,
+
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
+
+    private readonly configService: ConfigService,
   ) {}
 
   async create(dto: CreateVehicleDto, userId: string): Promise<Vehicle> {
@@ -55,11 +67,29 @@ export class VehiclesService {
       created_by: user,
     });
 
-    return this.vehiclesRepository.save(vehicle);
+    const savedVehicle = await this.vehiclesRepository.save(vehicle);
+
+    await this.invalidateVehiclesListCache();
+
+    return savedVehicle;
   }
 
-  findAll(): Promise<Vehicle[]> {
-    return this.vehiclesRepository.find();
+  async findAll(): Promise<Vehicle[]> {
+    const cachedVehicles = await this.cacheManager.get<Vehicle[]>(
+      VEHICLES_LIST_CACHE_KEY,
+    );
+
+    if (cachedVehicles) {
+      return cachedVehicles;
+    }
+
+    const vehicles = await this.vehiclesRepository.find();
+
+    const ttl = this.configService.get<number>('REDIS_TTL') ?? 3600;
+
+    await this.cacheManager.set(VEHICLES_LIST_CACHE_KEY, vehicles, ttl * 1000);
+
+    return vehicles;
   }
 
   async findOne(id: string): Promise<Vehicle> {
@@ -99,11 +129,22 @@ export class VehiclesService {
       vehicle.model = model;
     }
 
-    return this.vehiclesRepository.save(vehicle);
+    const updatedVehicle = await this.vehiclesRepository.save(vehicle);
+
+    await this.invalidateVehiclesListCache();
+
+    return updatedVehicle;
   }
 
   async remove(id: string): Promise<void> {
     const vehicle = await this.findOne(id);
+
     await this.vehiclesRepository.remove(vehicle);
+
+    await this.invalidateVehiclesListCache();
+  }
+
+  private async invalidateVehiclesListCache(): Promise<void> {
+    await this.cacheManager.del(VEHICLES_LIST_CACHE_KEY);
   }
 }
