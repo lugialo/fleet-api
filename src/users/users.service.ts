@@ -52,6 +52,14 @@ export class UsersService {
     return user;
   }
 
+  async findByNicknameWithPassword(nickname: string): Promise<User | null> {
+    return this.usersRepository
+      .createQueryBuilder('user')
+      .addSelect('user.password_hash')
+      .where('user.nickname = :nickname', { nickname })
+      .getOne();
+  }
+
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.findOne(id);
 
