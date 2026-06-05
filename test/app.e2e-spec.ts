@@ -14,7 +14,14 @@ import { IS_PUBLIC_KEY } from '../src/auth/decorators/public.decorator';
 import { AuthService } from '../src/auth/auth.service';
 import { VehiclesController } from '../src/vehicles/vehicles.controller';
 import { VehiclesService } from '../src/vehicles/vehicles.service';
-import { describe, expect, it, beforeEach } from '@jest/globals';
+import {
+  describe,
+  expect,
+  it,
+  beforeEach,
+  jest,
+  afterEach,
+} from '@jest/globals';
 
 type TestRequest = {
   headers: {
@@ -59,12 +66,27 @@ describe('Fleet API (e2e)', () => {
   let app: INestApplication<App>;
 
   const authService = {
-    login: jest.fn(),
+    login: jest.fn<() => Promise<{ access_token: string }>>(),
   };
 
   const vehiclesService = {
-    create: jest.fn(),
-    findAll: jest.fn(),
+    create: jest.fn<
+      (
+        payload: {
+          plate: string;
+          color: string;
+          year: number;
+          model_id: string;
+        },
+        userId: string,
+      ) => Promise<{ id: string; plate: string; color: string; year: number }>
+    >(),
+    findAll:
+      jest.fn<
+        () => Promise<
+          Array<{ id: string; plate: string; color: string; year: number }>
+        >
+      >(),
   };
 
   beforeEach(async () => {
