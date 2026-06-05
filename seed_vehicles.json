@@ -1,0 +1,26 @@
+[
+  {
+    "brand": "Toyota",
+    "model": "Corolla",
+    "fipe_code": "002062-6",
+    "plate": "ABC1234",
+    "color": "Preto",
+    "year": 2022
+  },
+  {
+    "brand": "Honda",
+    "model": "Civic",
+    "fipe_code": "014071-0",
+    "plate": "DEF1G23",
+    "color": "Prata",
+    "year": 2021
+  },
+  {
+    "brand": "Volkswagen",
+    "model": "Gol",
+    "fipe_code": "005001-0",
+    "plate": "GHI5678",
+    "color": "Branco",
+    "year": 2020
+  }
+]

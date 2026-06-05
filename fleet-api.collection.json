@@ -1,0 +1,157 @@
+{
+  "info": {
+    "name": "Fleet API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "brandId",
+      "value": ""
+    },
+    {
+      "key": "modelId",
+      "value": ""
+    },
+    {
+      "key": "vehicleId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nickname\": \"aivacol\",\n  \"password\": \"aivacol123\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Create Brand",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/brands",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Toyota\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Create Model",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/models",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Corolla\",\n  \"fipe_code\": \"002062-6\",\n  \"brand_id\": \"{{brandId}}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Create Vehicle",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/vehicles",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"plate\": \"ABC1234\",\n  \"color\": \"Preto\",\n  \"year\": 2022,\n  \"model_id\": \"{{modelId}}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "List Vehicles",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{baseUrl}}/vehicles"
+      }
+    },
+    {
+      "name": "Update Vehicle",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/vehicles/{{vehicleId}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"color\": \"Branco\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Delete Vehicle",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{baseUrl}}/vehicles/{{vehicleId}}"
+      }
+    }
+  ]
+}
