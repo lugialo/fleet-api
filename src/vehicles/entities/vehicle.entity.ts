@@ -1,5 +1,5 @@
-import { BaseEntity } from 'src/common/entities/base.entity';
-import { Model } from 'src/models/entities/model.entity';
+import { BaseEntity } from '../../common/entities/base.entity';
+import { Model } from '../../models/entities/model.entity';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
 @Entity('vehicles')
