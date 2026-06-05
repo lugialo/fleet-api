@@ -10,6 +10,7 @@ import * as redisStore from 'cache-manager-redis-store';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { BrandsModule } from './brands/brands.module';
 import { ModelsModule } from './models/models.module';
+import { VehiclesModule } from './vehicles/vehicles.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { ModelsModule } from './models/models.module';
     AuthModule,
     BrandsModule,
     ModelsModule,
+    VehiclesModule,
   ],
   controllers: [AppController],
   providers: [
